@@ -44,7 +44,7 @@ def webhook():
                 }).text
 
                 logger.info("PR diff fetched successfully")
-                logger.info(f"DIFF:\n{diff}")
+                # logger.info(f"DIFF:\n{diff}")
 
 
                 try:
