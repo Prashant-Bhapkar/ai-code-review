@@ -53,6 +53,8 @@ def webhook():
 
                 diff = diff_response.text
 
+                logger.info("✅ Diff fetched. Showing first 10 lines:")
+                logger.info("\n".join(diff.splitlines()[:10]))
 
                 logger.info("PR diff fetched successfully")
                 # logger.info(f"DIFF:\n{diff}")
