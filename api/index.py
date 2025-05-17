@@ -39,9 +39,20 @@ def webhook():
                 logger.info(f"Triggered on PR: {pr_url}")
                 logger.info("Fetching PR diff...")
 
-                diff = requests.get(pr_url + ".diff", headers={
-                    "Authorization": f"Bearer {GITHUB_TOKEN}"
-                }).text
+                # diff = requests.get(pr_url + ".diff", headers={
+                #     "Authorization": f"Bearer {GITHUB_TOKEN}"
+                # }).text
+
+                diff_response = requests.get(
+                    pr_url + ".diff",
+                    headers={
+                        "Authorization": f"Bearer {GITHUB_TOKEN}",
+                        "Accept": "application/vnd.github.v3.diff"  # 👈 this is the fix
+                    }
+                )
+
+                diff = diff_response.text
+
 
                 logger.info("PR diff fetched successfully")
                 # logger.info(f"DIFF:\n{diff}")
