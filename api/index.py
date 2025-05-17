@@ -54,11 +54,16 @@ def webhook():
                     return jsonify({"error": "Failed to load rules file"}), 500
 
                 prompt = (
-                    f"You are an AI code reviewer. ONLY check for violations listed in the rules below.\n"
-                    f"Rules:\n{rules}\n\n"
-                    f"Code Diff:\n{diff}\n\n"
-                    f"Format your response like this:\n"
-                    f"Issue:\nLocation:\nSolution:\n"
+                    "You are an expert AI code reviewer. ONLY check for violations listed in the rules below.\n"
+                    "Do not invent or add any extra checks or advice.\n"
+                    "Only review the provided git diff.\n"
+                    "If there are no violations, return NOTHING.\n\n"
+                    "Strictly follow this format if you find an issue:\n"
+                    "Issue:\nLocation: <filename or function name>\nSolution:\n\n"
+                    "Rules:\n"
+                    f"{rules}\n\n"
+                    "Git Diff:\n"
+                    f"{diff}"
                 )
 
                 logger.info("Calling OpenAI API...")
@@ -69,8 +74,12 @@ def webhook():
                     temperature=0.2
                 )
 
-                result = response.choices[0].message.content
+                result = response.choices[0].message.content.strip()
                 logger.info("OpenAI response received")
+
+                if not result or result.lower() == "none":
+                    logger.info("✅ No violations found. Skipping comment.")
+                    return jsonify({"status": "no violations"})
 
                 logger.info("Posting comment back to GitHub...")
                 logger.info(f"Comment URL: {comment_url}")
@@ -80,13 +89,12 @@ def webhook():
                     "Accept": "application/vnd.github+json"
                 }
 
-                response = requests.post(comment_url, json={"body": result}, headers=headers)
+                post_response = requests.post(comment_url, json={"body": result}, headers=headers)
 
-                if response.status_code == 201:
+                if post_response.status_code == 201:
                     logger.info("✅ Comment posted successfully!")
                 else:
-                    logger.warning(f"❌ Failed to post comment: {response.status_code} - {response.text}")
-
+                    logger.warning(f"❌ Failed to post comment: {post_response.status_code} - {post_response.text}")
 
         return jsonify({"status": "ok"})
     except Exception as e:
