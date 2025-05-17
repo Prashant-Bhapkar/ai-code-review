@@ -26,17 +26,17 @@ def webhook():
         event = request.headers.get("X-GitHub-Event")
         payload = request.get_json()
 
-        # logger.info(f"Received GitHub event: {event}")
+        logger.info(f"Received GitHub event: {event}")
 
         if event == "issue_comment":
             comment_body = payload["comment"]["body"]
-            # logger.info(f"Comment content: {comment_body}")
+            logger.info(f"Comment content: {comment_body}")
 
             if comment_body.strip() == "/ai-bot":
                 pr_url = payload["issue"]["pull_request"]["url"]
                 comment_url = payload["issue"]["comments_url"]
 
-                # logger.info(f"Triggered on PR: {pr_url}")
+                logger.info(f"Triggered on PR: {pr_url}")
                 logger.info("Fetching PR diff...")
 
                 diff = requests.get(pr_url + ".diff", headers={
