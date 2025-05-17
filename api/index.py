@@ -36,7 +36,7 @@ def webhook():
                 pr_url = payload["issue"]["pull_request"]["url"]
                 comment_url = payload["issue"]["comments_url"]
 
-                logger.info(f"Triggered on PR: {pr_url}")
+                # logger.info(f"Triggered on PR: {pr_url}")
                 logger.info("Fetching PR diff...")
 
                 diff = requests.get(pr_url + ".diff", headers={
