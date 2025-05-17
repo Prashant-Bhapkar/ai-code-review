@@ -26,7 +26,7 @@ def webhook():
         event = request.headers.get("X-GitHub-Event")
         payload = request.get_json()
 
-        logger.info(f"Received GitHub event: {event}")
+        # logger.info(f"Received GitHub event: {event}")
 
         if event == "issue_comment":
             comment_body = payload["comment"]["body"]
