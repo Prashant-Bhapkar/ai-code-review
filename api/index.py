@@ -30,7 +30,7 @@ def webhook():
 
         if event == "issue_comment":
             comment_body = payload["comment"]["body"]
-            logger.info(f"Comment content: {comment_body}")
+            # logger.info(f"Comment content: {comment_body}")
 
             if comment_body.strip() == "/ai-bot":
                 pr_url = payload["issue"]["pull_request"]["url"]
