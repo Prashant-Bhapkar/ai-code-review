@@ -1,0 +1,5 @@
+1. Avoid hardcoded secrets like API keys or passwords.
+2. Do not use print for logging.
+3. Use 'with' statement when opening files.
+4. Functions should be under 50 lines.
+5. Avoid deep nesting (more than 3 levels).
