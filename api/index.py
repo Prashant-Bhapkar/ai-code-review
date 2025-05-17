@@ -73,15 +73,20 @@ def webhook():
                 logger.info("OpenAI response received")
 
                 logger.info("Posting comment back to GitHub...")
-                post = requests.post(comment_url, json={"body": result}, headers={
+                logger.info(f"Comment URL: {comment_url}")
+
+                headers = {
                     "Authorization": f"Bearer {GITHUB_TOKEN}",
                     "Accept": "application/vnd.github+json"
-                })
+                }
 
-                if post.status_code == 201:
-                    logger.info("Comment posted successfully!")
+                response = requests.post(comment_url, json={"body": result}, headers=headers)
+
+                if response.status_code == 201:
+                    logger.info("✅ Comment posted successfully!")
                 else:
-                    logger.warning(f"Failed to post comment: {post.status_code} - {post.text}")
+                    logger.warning(f"❌ Failed to post comment: {response.status_code} - {response.text}")
+
 
         return jsonify({"status": "ok"})
     except Exception as e:
