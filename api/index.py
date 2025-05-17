@@ -44,6 +44,8 @@ def webhook():
                 }).text
 
                 logger.info("PR diff fetched successfully")
+                logger.info(f"DIFF:\n{diff}")
+
 
                 try:
                     with open("rules.txt") as f:
