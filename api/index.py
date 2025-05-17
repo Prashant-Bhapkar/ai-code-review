@@ -34,31 +34,24 @@ def webhook():
 
             if comment_body.strip() == "/ai-bot":
                 pr_url = payload["issue"]["pull_request"]["url"]
-                comment_url = payload["issue"]["comments_url"]
+                pr_number = pr_url.split("/")[-1]
+                owner = payload["repository"]["owner"]["login"]
+                repo = payload["repository"]["name"]
 
                 logger.info(f"Triggered on PR: {pr_url}")
                 logger.info("Fetching PR diff...")
-
-                # diff = requests.get(pr_url + ".diff", headers={
-                #     "Authorization": f"Bearer {GITHUB_TOKEN}"
-                # }).text
 
                 diff_response = requests.get(
                     pr_url + ".diff",
                     headers={
                         "Authorization": f"Bearer {GITHUB_TOKEN}",
-                        "Accept": "application/vnd.github.v3.diff"  # 👈 this is the fix
+                        "Accept": "application/vnd.github.v3.diff"
                     }
                 )
 
                 diff = diff_response.text
-
                 logger.info("✅ Diff fetched. Showing first 10 lines:")
                 logger.info("\n".join(diff.splitlines()[:10]))
-
-                logger.info("PR diff fetched successfully")
-                # logger.info(f"DIFF:\n{diff}")
-
 
                 try:
                     with open("rules.txt") as f:
@@ -96,18 +89,36 @@ def webhook():
                     logger.info("✅ No violations found. Skipping comment.")
                     return jsonify({"status": "no violations"})
 
-                logger.info("Posting comment back to GitHub...")
-                logger.info(f"Comment URL: {comment_url}")
+                logger.info("Posting inline comment back to GitHub...")
 
-                headers = {
-                    "Authorization": f"Bearer {GITHUB_TOKEN}",
-                    "Accept": "application/vnd.github+json"
+                # Get head commit SHA
+                pr_data = requests.get(pr_url, headers={
+                    "Authorization": f"Bearer {GITHUB_TOKEN}"
+                }).json()
+                commit_id = pr_data["head"]["sha"]
+
+                # Get PR files and map violation to file
+                files_url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/files"
+                files_data = requests.get(files_url, headers={
+                    "Authorization": f"Bearer {GITHUB_TOKEN}"
+                }).json()
+
+                # Dummy logic: post first result to first file at position 1
+                comment_payload = {
+                    "body": result,
+                    "commit_id": commit_id,
+                    "path": files_data[0]["filename"],
+                    "position": 1  # You should map real position here
                 }
 
-                post_response = requests.post(comment_url, json={"body": result}, headers=headers)
+                review_comment_url = f"https://api.github.com/repos/{owner}/{repo}/pulls/{pr_number}/comments"
+                post_response = requests.post(review_comment_url, json=comment_payload, headers={
+                    "Authorization": f"Bearer {GITHUB_TOKEN}",
+                    "Accept": "application/vnd.github+json"
+                })
 
                 if post_response.status_code == 201:
-                    logger.info("✅ Comment posted successfully!")
+                    logger.info("✅ Inline comment posted successfully!")
                 else:
                     logger.warning(f"❌ Failed to post comment: {post_response.status_code} - {post_response.text}")
 
