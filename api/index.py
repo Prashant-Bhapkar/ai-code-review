@@ -63,8 +63,4 @@ def webhook():
         logger.exception("Error handling webhook")
         return jsonify({"error": str(e)}), 500
 
-# Required for Vercel
-def handler(environ, start_response):
-    return app.wsgi_app(environ, start_response)
-
 app = app
